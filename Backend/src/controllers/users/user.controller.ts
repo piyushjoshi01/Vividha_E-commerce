@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import userServices from "../../services/users/user.services";
 
 class UserController {
+
+  constructor() {}
   async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
       const users = await userServices.getAllUsers();
@@ -14,7 +16,7 @@ class UserController {
       res.status(400).json({ message: "Unable to fetch the users" });
     }
   }
-  constructor() {}
+
 
   async getUserById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
