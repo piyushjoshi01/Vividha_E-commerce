@@ -50,5 +50,42 @@ class ProductServices {
       return "Product Not Found";
     }
   }
+
+  async updateProduct(id: string, product: Product) {
+    const db = client.db(dbName);
+    const collection = db.collection<Product>("products");
+
+    const objectId = new ObjectId(id);
+    console.log("ObjectId:", objectId);
+    console.log("Product:", product);
+    const result = await collection.updateOne(
+      { _id: objectId },
+      { $set: product }
+    );
+
+    if (result.acknowledged == true && result.modifiedCount > 0) {
+      return "Product Updated Successfully";
+    } else {
+      throw new Error("Error Updating Product");
+    }
+  }
+
+  async deleteProduct(id: string) {
+    const db = client.db(dbName);
+    const collection = db.collection<Product>("products");
+
+    const objectId = new ObjectId(id);
+    console.log("ObjectId:", objectId);
+    try {
+      const result = await collection.deleteOne({ _id: objectId });
+      if (result.deletedCount === 1) {
+        return "Product Deleted Successfully";
+      } else {
+        throw new Error("Product Not Found");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 }
 export default new ProductServices();

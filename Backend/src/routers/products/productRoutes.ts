@@ -9,5 +9,7 @@ router.use(express.json());
 router.post("/add-new-product", productController.addProducts);
 router.get("/get-all-products", productController.getAllProducts);
 router.get("/getProductById/:id", productController.getProductById);
+router.put("/updateProduct/:id", productController.updateProduct);
+router.post("/deleteProduct", productController.deleteProduct);
 
 export default router;
