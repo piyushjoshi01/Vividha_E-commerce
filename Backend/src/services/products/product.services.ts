@@ -3,6 +3,16 @@ import { client, dbName } from "../../config/mongoDb";
 import { Product } from "../../types/productType";
 import { ObjectId } from "mongodb";
 
+interface ProductUpdate {
+  name?: string;
+  price?: number;
+  available?: boolean;
+  images?: string[];
+  sizes?: string[];
+  category?: string;
+  stock?: number;
+}
+
 class ProductServices {
   constructor() {}
 
@@ -53,17 +63,17 @@ class ProductServices {
 
   async updateProduct(id: string, product: Product) {
     const db = client.db(dbName);
-    const collection = db.collection<Product>("products");
+    const collection = db.collection("products");
 
     const objectId = new ObjectId(id);
     console.log("ObjectId:", objectId);
-    console.log("Product:", product);
+
     const result = await collection.updateOne(
       { _id: objectId },
       { $set: product }
     );
 
-    if (result.acknowledged == true && result.modifiedCount > 0) {
+    if (result.acknowledged && result.modifiedCount > 0) {
       return "Product Updated Successfully";
     } else {
       throw new Error("Error Updating Product");

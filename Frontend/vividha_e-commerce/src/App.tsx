@@ -1,14 +1,28 @@
 import { BrowserRouter } from "react-router-dom";
-import "./App.css";
+
 import AppRoutes from "./routes/AppRoutes";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
-    <>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <ToastContainer />
+      <div className="app flex flex-col min-h-screen">
+        {/* Main content area */}
+        <div>
+          <Navbar />
+        </div>
+        <div className="content flex-grow">
+          <AppRoutes />
+        </div>
+
+        {/* Footer */}
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
 }
 
