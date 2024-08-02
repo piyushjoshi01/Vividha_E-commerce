@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Product } from "../../types/productType";
 import {
@@ -10,16 +10,12 @@ import {
   CardContent,
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
 } from "@mui/material";
 import styled from "@emotion/styled";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Webcam from "react-webcam";
+import StyleYours from "./StyleYours";
 
 // Container for the entire page
 const StyledContainer = styled(Container)`
@@ -64,8 +60,6 @@ const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [showWebcam, setShowWebcam] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -84,38 +78,9 @@ const ProductDetails = () => {
     fetchProductDetail();
   }, [id]);
 
-  const handleCapture = (imageSrc: string | null) => {
-    if (imageSrc) {
-      setCapturedImage(imageSrc);
-      setShowWebcam(false);
-    } else {
-      console.error("Failed to capture image");
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!capturedImage) {
-      console.error("No image captured");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        "https://ncwop1k0f6.execute-api.us-east-1.amazonaws.com/dev/image",
-        { image: capturedImage },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      alert("Failed to upload image");
-    }
-    setLoading(false);
+  const handleCapture = (imageSrc: string) => {
+    console.log("Captured image:", imageSrc);
+    // You can handle the captured image here if needed
   };
 
   if (!product) {
@@ -136,13 +101,21 @@ const ProductDetails = () => {
         <Grid container spacing={2} alignItems="center" justifyContent="center">
           <Grid item xs={12} md={7}>
             <StyledSlider {...sliderSettings}>
-              {product.images.map((image, index) => (
-                <div key={index}>
+              {Array.isArray(product.images) ? (
+                product.images.map((image, index) => (
+                  <div key={index}>
+                    <StyledImageContainer>
+                      <StyledImage src={image} alt={product.name} />
+                    </StyledImageContainer>
+                  </div>
+                ))
+              ) : (
+                <div>
                   <StyledImageContainer>
-                    <StyledImage src={image} alt={product.name} />
+                    <StyledImage src={product.images} alt={product.name} />
                   </StyledImageContainer>
                 </div>
-              ))}
+              )}
             </StyledSlider>
           </Grid>
           <Grid item xs={12} md={5}>
@@ -182,54 +155,11 @@ const ProductDetails = () => {
         </Grid>
       </StyledContainer>
 
-      {/* Webcam Modal */}
-      <Dialog
+      <StyleYours
         open={showWebcam}
         onClose={() => setShowWebcam(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Capture Your Style</DialogTitle>
-        <DialogContent>
-          {capturedImage ? (
-            <img src={capturedImage} alt="Captured" style={{ width: "100%" }} />
-          ) : (
-            <Webcam
-              audio={false}
-              height={400}
-              width={600}
-              screenshotFormat="image/jpeg"
-              onUserMediaError={() => alert("Unable to access webcam")}
-              ref={(webcam) => {
-                if (webcam) {
-                  const captureButton = document.getElementById("capture");
-                  if (captureButton) {
-                    captureButton.addEventListener("click", () => {
-                      const imageSrc = webcam.getScreenshot();
-                      handleCapture(imageSrc);
-                    });
-                  }
-                }
-              }}
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          {capturedImage && (
-            <Button onClick={handleUpload} color="primary" disabled={loading}>
-              {loading ? "Uploading..." : "Upload"}
-            </Button>
-          )}
-          <Button onClick={() => setShowWebcam(false)} color="secondary">
-            Close
-          </Button>
-          {!capturedImage && (
-            <Button id="capture" color="primary">
-              Capture
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+        onCapture={handleCapture}
+      />
     </Box>
   );
 };

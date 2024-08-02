@@ -20,13 +20,14 @@ class AuthController {
       res.status(400).json({ message: "missing details" });
     } else {
       const successfullRegister = await authServices.signUpUser(user);
+      console.log(successfullRegister);
 
       if (successfullRegister === "User created successfully") {
         const token = createToken(user.username);
 
         res.status(201).json({ token });
       } else {
-        res.status(400).json({ message: "Failed to register user" });
+        res.status(400).json({ message: successfullRegister });
       }
     }
   }

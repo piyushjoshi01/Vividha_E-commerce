@@ -14,6 +14,9 @@ const Navbar = () => {
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
   const [isAuthMenuOpen, setIsAuthMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCategoriesMenuOpen, setIsCategoriesMenuOpen] = useState(false);
+  const [isMobileCategoriesMenuOpen, setIsMobileCategoriesMenuOpen] =
+    useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,6 +30,30 @@ const Navbar = () => {
   const toggleAuthMenu = () => {
     setIsAuthMenuOpen(!isAuthMenuOpen);
   };
+
+  const toggleCategoriesMenu = () => {
+    setIsCategoriesMenuOpen(!isCategoriesMenuOpen);
+  };
+
+  const toggleMobileCategoriesMenu = () => {
+    setIsMobileCategoriesMenuOpen(!isMobileCategoriesMenuOpen);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      event.target instanceof HTMLElement &&
+      !event.target.closest(".categories-menu")
+    ) {
+      setIsCategoriesMenuOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   // Check if accessToken is present in local storage
   useEffect(() => {
@@ -62,16 +89,46 @@ const Navbar = () => {
           >
             Home
           </a>
-          <a
-            href="/categories"
-            className={`block py-2 rounded ${
-              isActive("/categories")
-                ? "bg-gray-800"
-                : "text-gray-300 hover:bg-gray-700"
-            }`}
-          >
-            Categories
-          </a>
+          <div className="relative categories-menu">
+            <button
+              onClick={toggleCategoriesMenu}
+              className={`block py-2 rounded ${
+                isActive("/categories")
+                  ? "bg-gray-800"
+                  : "text-gray-300 hover:bg-gray-700"
+              }`}
+            >
+              Categories
+            </button>
+            {isCategoriesMenuOpen && (
+              <div className="absolute left-0 mt-2 w-48 bg-white text-gray-800 rounded shadow-lg z-50">
+                <a
+                  href="/categories/mens"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Men's Clothing
+                </a>
+                <a
+                  href="/womenCategory"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Women's Clothing
+                </a>
+                <a
+                  href="/categories/kids"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Kids' Clothing
+                </a>
+                <a
+                  href="/categories/accessories"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Accessories
+                </a>
+              </div>
+            )}
+          </div>
           <a
             href="/size-chart"
             className={`block py-2 rounded ${
@@ -154,17 +211,52 @@ const Navbar = () => {
             </a>
           </li>
           <li>
-            <a
-              href="/categories"
-              className={`block py-2 rounded ${
-                isActive("/categories")
-                  ? "bg-gray-800"
-                  : "text-gray-300 hover:bg-gray-700"
-              }`}
-              onClick={toggleNavbar}
+            <button
+              onClick={toggleMobileCategoriesMenu}
+              className="block py-2 text-left text-gray-300 hover:bg-gray-700 rounded"
             >
               Categories
-            </a>
+            </button>
+            {isMobileCategoriesMenuOpen && (
+              <ul className="pl-4">
+                <li>
+                  <a
+                    href="/categories/mens"
+                    className="block py-2 hover:bg-gray-800 rounded"
+                    onClick={toggleNavbar}
+                  >
+                    Men's Clothing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/categories/womens"
+                    className="block py-2 hover:bg-gray-800 rounded"
+                    onClick={toggleNavbar}
+                  >
+                    Women's Clothing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/categories/kids"
+                    className="block py-2 hover:bg-gray-800 rounded"
+                    onClick={toggleNavbar}
+                  >
+                    Kids' Clothing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/categories/accessories"
+                    className="block py-2 hover:bg-gray-800 rounded"
+                    onClick={toggleNavbar}
+                  >
+                    Accessories
+                  </a>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <a

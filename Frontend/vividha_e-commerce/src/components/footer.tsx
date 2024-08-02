@@ -1,5 +1,5 @@
 import React from "react";
-import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa"; // Import social media icons
+import { FaFacebook, FaTwitter, FaInstagram, FaWhatsapp } from "react-icons/fa"; // Import social media icons
 
 const Footer: React.FC = () => {
   return (
@@ -27,11 +27,11 @@ const Footer: React.FC = () => {
                 Home
               </a>
             </li>
-            <li>
+            {/* <li>
               <a href="/categories" className="hover:text-gray-300">
                 Categories
               </a>
-            </li>
+            </li> */}
             <li>
               <a href="/size-chart" className="hover:text-gray-300">
                 Size Chart
@@ -58,9 +58,12 @@ const Footer: React.FC = () => {
               <FaFacebook size={24} />
             </a>
             <a href="https://twitter.com" className="hover:text-gray-300">
-              <FaTwitter size={24} />
+              <FaWhatsapp size={24} />
             </a>
-            <a href="https://instagram.com" className="hover:text-gray-300">
+            <a
+              href="https://www.instagram.com/vividha_thedesignstudio/"
+              className="hover:text-gray-300"
+            >
               <FaInstagram size={24} />
             </a>
           </div>
