@@ -1,5 +1,5 @@
 import React from "react";
-import { FaFacebook, FaTwitter, FaInstagram, FaWhatsapp } from "react-icons/fa"; // Import social media icons
+import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa"; // Import social media icons
 
 const Footer: React.FC = () => {
   return (

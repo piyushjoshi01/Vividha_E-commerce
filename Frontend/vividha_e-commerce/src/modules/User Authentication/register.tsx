@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { RegisterData } from "../../types/authTypes";
 
-
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<RegisterData>({
@@ -31,7 +30,7 @@ const Register: React.FC = () => {
     }
     try {
       const response = await axios.post(
-        "http://localhost:8000/auth/signUpUser",
+        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/auth/signUpUser",
         {
           username: formData.username,
           email: formData.email,

@@ -1,17 +1,7 @@
 import { error } from "console";
 import { client, dbName } from "../../config/mongoDb";
-import { Product } from "../../types/productType";
+import { Product, PurchaseProduct } from "../../types/productType";
 import { ObjectId } from "mongodb";
-
-interface ProductUpdate {
-  name?: string;
-  price?: number;
-  available?: boolean;
-  images?: string[];
-  sizes?: string[];
-  category?: string;
-  stock?: number;
-}
 
 class ProductServices {
   constructor() {}
@@ -95,6 +85,22 @@ class ProductServices {
       }
     } catch (err) {
       console.log(err);
+    }
+  }
+
+  async purchaseProduct(purchasedProduct: PurchaseProduct) {
+    try {
+      const db = client.db(dbName);
+      const collection = db.collection<PurchaseProduct>("purchasedproducts");
+
+      console.log("Inserting products:", purchasedProduct);
+
+      const result = await collection.insertOne(purchasedProduct);
+
+      console.log(result);
+    } catch (err) {
+      console.error("Error adding products:", err);
+      throw new Error("Internal server error");
     }
   }
 }

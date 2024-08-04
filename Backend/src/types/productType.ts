@@ -7,3 +7,9 @@ export interface Product {
   images: string[];
   sizes: string[];
 }
+
+export interface PurchaseProduct {
+  username: string;
+  productname: string;
+  amount: number;
+}

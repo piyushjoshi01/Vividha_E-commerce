@@ -19,7 +19,7 @@ const AppRoutes = () => {
         <Route path="/add-product" Component={AddProduct} />
         <Route path="/update-product" Component={UpdateProduct} />
         <Route path="/product/:id" Component={ProductDetails} />
-        <Route path="/womenCategory" Component={WomenClothes}/>
+        <Route path="/womenCategory" Component={WomenClothes} />
       </Routes>
     </>
   );

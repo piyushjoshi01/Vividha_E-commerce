@@ -29,7 +29,7 @@ const Login: React.FC = () => {
     try {
       console.log("Sending payload:", payload); // Log the payload for debugging
       const response = await axios.post(
-        "http://localhost:8000/auth/loginUser",
+        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/auth/loginUser",
         payload,
         {
           headers: {

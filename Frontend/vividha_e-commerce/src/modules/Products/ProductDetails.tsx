@@ -16,6 +16,8 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import StyleYours from "./StyleYours";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Container for the entire page
 const StyledContainer = styled(Container)`
@@ -60,6 +62,7 @@ const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [showWebcam, setShowWebcam] = useState(false);
+  // Replace with actual username from auth context or state
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -81,6 +84,30 @@ const ProductDetails = () => {
   const handleCapture = (imageSrc: string) => {
     console.log("Captured image:", imageSrc);
     // You can handle the captured image here if needed
+  };
+
+  const handleOrder = async () => {
+    try {
+      const orderData = {
+        username: "Piyush",
+        productname: product?.name,
+        amount: product?.price,
+      };
+
+      const response = await axios.post(
+        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/purchaseProduct",
+        orderData
+      );
+
+      if (response.status === 201) {
+        toast.success("Order placed successfully!");
+      } else {
+        toast.error("Failed to place the order.");
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      toast.error("An error occurred while placing the order.");
+    }
   };
 
   if (!product) {
@@ -150,6 +177,14 @@ const ProductDetails = () => {
               >
                 Style Yours
               </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleOrder}
+                sx={{ mt: 4, ml: 2 }}
+              >
+                Order Now
+              </Button>
             </CardContent>
           </Grid>
         </Grid>
@@ -160,6 +195,7 @@ const ProductDetails = () => {
         onClose={() => setShowWebcam(false)}
         onCapture={handleCapture}
       />
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar />
     </Box>
   );
 };

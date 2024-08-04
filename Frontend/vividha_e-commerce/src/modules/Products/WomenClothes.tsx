@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Product } from "../../types/productType";
 import { Container, Grid, Typography } from "@mui/material";
 import ProductCard from "./ProductCard"; // Adjust the import path as necessary
@@ -12,7 +12,7 @@ const WomenClothes = () => {
     const fetchAllProducts = async () => {
       try {
         const response = await axios.get<Product[]>(
-          "http://localhost:8000/product/get-all-products"
+          "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/get-all-products"
         );
         setProducts(response.data);
       } catch (error) {

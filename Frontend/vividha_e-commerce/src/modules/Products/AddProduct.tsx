@@ -112,7 +112,7 @@ const AddProduct = () => {
 
       // Post the updated products to the backend
       await axios.post(
-        "http://localhost:8000/product/add-new-product",
+        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/add-new-product",
         updatedProducts
       );
       toast.success("Products added successfully");

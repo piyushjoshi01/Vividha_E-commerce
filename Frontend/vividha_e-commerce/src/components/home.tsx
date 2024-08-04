@@ -10,7 +10,7 @@ const Home = () => {
   useEffect(() => {
     const fetchAllProducts = async () => {
       const response = await axios.get<Product[]>(
-        "http://localhost:8000/product/get-all-products"
+        "internal-BackendLoadBalancer-1072964818.us-east-1.elb.amazonaws.com/product/get-all-products"
       );
       setProducts(response.data);
     };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ChangeEvent } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
 import {
   Card,
@@ -7,7 +7,6 @@ import {
   Button,
   TextField,
   Grid,
-  Typography,
   Container,
   MenuItem,
   Select,
@@ -35,7 +34,7 @@ const UpdateProduct = () => {
   useEffect(() => {
     const fetchAllProducts = async () => {
       const response = await axios.get<Product[]>(
-        "http://localhost:8000/product/get-all-products"
+        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/get-all-products"
       );
       setProducts(response.data);
     };
