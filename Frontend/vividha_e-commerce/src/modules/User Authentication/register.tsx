@@ -17,6 +17,9 @@ const Register: React.FC = () => {
 
   const [error, setError] = useState<string>("");
 
+  const apiUrl =
+    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/auth/signUpUser";
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -29,15 +32,12 @@ const Register: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post(
-        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/auth/signUpUser",
-        {
-          username: formData.username,
-          email: formData.email,
-          mobile: formData.mobile,
-          password: formData.password,
-        }
-      );
+      const response = await axios.post(apiUrl, {
+        username: formData.username,
+        email: formData.email,
+        mobile: formData.mobile,
+        password: formData.password,
+      });
       console.log(response.data);
       toast.success("Successfully Registered");
       navigate("/");

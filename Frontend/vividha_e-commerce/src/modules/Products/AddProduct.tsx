@@ -68,6 +68,8 @@ const AddProduct = () => {
     ]);
     setSelectedFiles([...selectedFiles, []]);
   };
+  const apiUrl =
+    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/add-new-product";
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -111,10 +113,7 @@ const AddProduct = () => {
       }));
 
       // Post the updated products to the backend
-      await axios.post(
-        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/add-new-product",
-        updatedProducts
-      );
+      await axios.post(apiUrl, updatedProducts);
       toast.success("Products added successfully");
     } catch (error) {
       console.error("Error adding products:", error);

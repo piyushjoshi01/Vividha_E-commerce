@@ -7,13 +7,12 @@ import ProductCard from "./ProductCard"; // Adjust the import path as necessary
 const WomenClothes = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [womenClothes, setWomenClothes] = useState<Product[]>([]);
-
+  const apiUrl =
+    "http//:internal-BackendLoadBalancer-294495114.us-east-1.elb.amazonaws.com/product/get-all-products";
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const response = await axios.get<Product[]>(
-          "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/get-all-products"
-        );
+        const response = await axios.get<Product[]>(apiUrl);
         setProducts(response.data);
       } catch (error) {
         console.error("Error fetching products:", error);

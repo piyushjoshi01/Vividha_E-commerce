@@ -18,6 +18,8 @@ const Login: React.FC = () => {
     const { name, value } = e.target;
     setLoginData({ ...loginData, [name]: value });
   };
+  const apiUrl =
+    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/auth/loginUser";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,15 +30,11 @@ const Login: React.FC = () => {
 
     try {
       console.log("Sending payload:", payload); // Log the payload for debugging
-      const response = await axios.post(
-        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/auth/loginUser",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(apiUrl, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       console.log("Response data:", response.data.token);
       toast.success("Login successfull!");
       navigate("/");

@@ -6,12 +6,11 @@ import ProductCard from "../modules/Products/ProductCard";
 
 const Home = () => {
   const [products, setProducts] = useState<Product[]>([]);
-
+  const apiUrl =
+    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/get-all-products";
   useEffect(() => {
     const fetchAllProducts = async () => {
-      const response = await axios.get<Product[]>(
-        "internal-BackendLoadBalancer-1072964818.us-east-1.elb.amazonaws.com/product/get-all-products"
-      );
+      const response = await axios.get<Product[]>(apiUrl);
       setProducts(response.data);
     };
     fetchAllProducts();

@@ -30,12 +30,12 @@ export interface UpdateProduct {
 
 const UpdateProduct = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const apiUrl =
+    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/get-all-products";
 
   useEffect(() => {
     const fetchAllProducts = async () => {
-      const response = await axios.get<Product[]>(
-        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/get-all-products"
-      );
+      const response = await axios.get<Product[]>(apiUrl);
       setProducts(response.data);
     };
     fetchAllProducts();
@@ -68,12 +68,9 @@ const UpdateProduct = () => {
   const handleUpdate = async (index: number) => {
     const { _id, ...productWithoutId } = products[index];
     console.log("Update Product", productWithoutId);
-
+    const apiUrl1 = `http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/${_id}`;
     try {
-      await axios.put(
-        `http://localhost:8000/product/updateProduct/${_id}`,
-        productWithoutId
-      );
+      await axios.put(apiUrl1, productWithoutId);
       toast.success("Product updated successfully");
     } catch (error) {
       console.error("Error updating product:", error);

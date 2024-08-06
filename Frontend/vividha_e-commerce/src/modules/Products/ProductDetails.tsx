@@ -63,13 +63,11 @@ const ProductDetails = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [showWebcam, setShowWebcam] = useState(false);
   // Replace with actual username from auth context or state
-
+  const apiUrl = `http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/getProductById/${id}`;
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8000/product/getProductById/${id}`
-        );
+        const response = await axios.get(apiUrl);
         if (response) {
           setProduct(response.data);
         }
@@ -85,6 +83,8 @@ const ProductDetails = () => {
     console.log("Captured image:", imageSrc);
     // You can handle the captured image here if needed
   };
+  const apiUrl1 =
+    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/purchaseProduct";
 
   const handleOrder = async () => {
     try {
@@ -94,10 +94,7 @@ const ProductDetails = () => {
         amount: product?.price,
       };
 
-      const response = await axios.post(
-        "BackendLoadBalancer-2130855055.us-east-1.elb.amazonaws.com/product/purchaseProduct",
-        orderData
-      );
+      const response = await axios.post(apiUrl1, orderData);
 
       if (response.status === 201) {
         toast.success("Order placed successfully!");
