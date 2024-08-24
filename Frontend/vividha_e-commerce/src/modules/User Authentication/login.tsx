@@ -19,7 +19,7 @@ const Login: React.FC = () => {
     setLoginData({ ...loginData, [name]: value });
   };
   const apiUrl =
-    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/auth/loginUser";
+    "http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/auth/loginUser";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -15,8 +15,8 @@ const server = http.createServer(app);
 (async function startServer() {
   try {
     await connectDB();
-    server.listen(8000, () => {
-      console.log(`Server is listening on http://localhost:8000`);
+    server.listen(80, () => {
+      console.log(`Server is listening on http://localhost:80`);
     });
   } catch (error) {
     console.error("Failed to start the server:", error);

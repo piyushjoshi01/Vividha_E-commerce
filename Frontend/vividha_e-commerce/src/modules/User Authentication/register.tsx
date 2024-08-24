@@ -18,7 +18,7 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string>("");
 
   const apiUrl =
-    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/auth/signUpUser";
+    "http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/auth/signUpUser";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,6 +39,15 @@ const Register: React.FC = () => {
         password: formData.password,
       });
       console.log(response.data);
+
+      // Additional API call with email data
+      const emailApiUrl =
+        "https://k5rvdjbm98.execute-api.us-east-1.amazonaws.com/prod/subscribe-sns";
+      const emailResponse = await axios.post(emailApiUrl, {
+        email: formData.email,
+      });
+      console.log(emailResponse.data);
+
       toast.success("Successfully Registered");
       navigate("/");
     } catch (error) {

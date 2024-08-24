@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^5.16.5",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "axios": "^1.7.2",

@@ -68,7 +68,7 @@ const UpdateProduct = () => {
   const handleUpdate = async (index: number) => {
     const { _id, ...productWithoutId } = products[index];
     console.log("Update Product", productWithoutId);
-    const apiUrl1 = `http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/${_id}`;
+    const apiUrl1 = `http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/${_id}`;
     try {
       await axios.put(apiUrl1, productWithoutId);
       toast.success("Product updated successfully");
@@ -81,7 +81,7 @@ const UpdateProduct = () => {
   const handleDelete = async (index: number) => {
     const product = products[index];
     try {
-      await axios.post(`http://localhost:8000/product/deleteProduct`, {
+      await axios.post(`http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/product/deleteProduct`, {
         id: product._id,
       });
       const updatedProducts = products.filter((_, i) => i !== index);

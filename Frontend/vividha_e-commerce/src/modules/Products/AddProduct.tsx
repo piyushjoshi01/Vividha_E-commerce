@@ -69,7 +69,7 @@ const AddProduct = () => {
     setSelectedFiles([...selectedFiles, []]);
   };
   const apiUrl =
-    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/add-new-product";
+    "http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/product/add-new-product";
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -79,7 +79,7 @@ const AddProduct = () => {
         const uploadPromises = files.map(async (file) => {
           const base64 = await convertFileToBase64(file);
           const response = await axios.post(
-            "https://ncwop1k0f6.execute-api.us-east-1.amazonaws.com/dev/image",
+            "https://9sdvvqejwf.execute-api.us-east-1.amazonaws.com/prod/upload-image",
             {
               files: [
                 {

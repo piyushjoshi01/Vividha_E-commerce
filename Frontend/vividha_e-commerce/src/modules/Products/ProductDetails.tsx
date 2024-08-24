@@ -63,7 +63,7 @@ const ProductDetails = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [showWebcam, setShowWebcam] = useState(false);
   // Replace with actual username from auth context or state
-  const apiUrl = `http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/getProductById/${id}`;
+  const apiUrl = `http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/product/getProductById/${id}`;
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
@@ -84,7 +84,7 @@ const ProductDetails = () => {
     // You can handle the captured image here if needed
   };
   const apiUrl1 =
-    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/purchaseProduct";
+    "http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/product/purchaseProduct";
 
   const handleOrder = async () => {
     try {
@@ -98,6 +98,28 @@ const ProductDetails = () => {
 
       if (response.status === 201) {
         toast.success("Order placed successfully!");
+
+        // Additional API call with purchase details
+        const purchaseDetailsApiUrl =
+          "https://k5rvdjbm98.execute-api.us-east-1.amazonaws.com/prod/publish-purchase";
+        const purchaseDetails = {
+          purchaseDetails: {
+            userEmail: "piyushjoshi280601@gmail.com",
+            itemName: product?.name,
+            amount: product?.price,
+          },
+        };
+
+        const purchaseResponse = await axios.post(
+          purchaseDetailsApiUrl,
+          purchaseDetails
+        );
+
+        if (purchaseResponse.status === 201) {
+          toast.success("Purchase details recorded successfully!");
+        } else {
+          toast.error("Failed to record purchase details.");
+        }
       } else {
         toast.error("Failed to place the order.");
       }

@@ -7,7 +7,7 @@ import ProductCard from "../modules/Products/ProductCard";
 const Home = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const apiUrl =
-    "http://internal-BackendLoadBalancer-906025671.us-east-1.elb.amazonaws.com/product/get-all-products";
+    "http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/product/get-all-products";
   useEffect(() => {
     const fetchAllProducts = async () => {
       const response = await axios.get<Product[]>(apiUrl);

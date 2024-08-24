@@ -1,0 +1,834 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template to create Security Groups, EC2 instances, Target Group, Application Load Balancer, S3 Bucket, and Lambda Functions using an existing IAM role.
+
+Parameters:
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    ConstraintDescription: Must be a valid EC2 instance type.
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  LambdaExecutionRoleArn:
+    Description: ARN of an existing IAM role for Lambda execution
+    Type: String
+  VpcId:
+    Description: VPC ID where the resources will be created
+    Type: AWS::EC2::VPC::Id
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      "AMI": "ami-04a81a99f5ec58529"
+
+Resources:
+  # Public Subnet 1 for frontend
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+
+  # Public Subnet 2 for frontend
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+
+  # Public Subnet 3 for backend
+  PublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+
+  # Public Subnet 4 for backend
+  PublicSubnet4:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: 10.0.4.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+
+  # Internet Gateway for public subnets
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  # Attach Internet Gateway to VPC
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VpcId
+      InternetGatewayId: !Ref InternetGateway
+
+  # Route Table for public subnets
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+
+  # Route to Internet Gateway
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # Associate Public Route Table with Public Subnet 1
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  # Associate Public Route Table with Public Subnet 2
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # Associate Public Route Table with Public Subnet 3
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet3
+      RouteTableId: !Ref PublicRouteTable
+
+  # Associate Public Route Table with Public Subnet 4
+  PublicSubnet4RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet4
+      RouteTableId: !Ref PublicRouteTable
+
+  # Security Group for frontend instances
+  FrontendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH and HTTP access
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  # Security Group for backend instances
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH and HTTP access
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+
+  # Frontend EC2 Instance 1
+  FrontendInstance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref FrontendSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SubnetId: !Ref PublicSubnet1
+
+  # Frontend EC2 Instance 2
+  FrontendInstance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref FrontendSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SubnetId: !Ref PublicSubnet2
+
+  # Backend EC2 Instance 1
+  BackendInstance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref BackendSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SubnetId: !Ref PublicSubnet3
+
+  # Backend EC2 Instance 2
+  BackendInstance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref BackendSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SubnetId: !Ref PublicSubnet4
+
+  # Target Group for frontend
+  FrontendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: FrontendTargetGroup
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: instance
+      Targets:
+        - Id: !Ref FrontendInstance1
+        - Id: !Ref FrontendInstance2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: 200
+
+  # Target Group for backend
+  BackendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: BackendTargetGroup
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: instance
+      Targets:
+        - Id: !Ref BackendInstance1
+        - Id: !Ref BackendInstance2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: 200
+
+  # Load Balancer for frontend
+  FrontendLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: FrontendLoadBalancer
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroups:
+        - !Ref FrontendSecurityGroup
+      Scheme: internet-facing
+
+  # Load Balancer for backend (internal)
+  BackendLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: BackendLoadBalancer
+      Subnets:
+        - !Ref PublicSubnet3
+        - !Ref PublicSubnet4
+      SecurityGroups:
+        - !Ref BackendSecurityGroup
+      Scheme: internet-facing
+
+  # Listener for frontend Load Balancer
+  FrontendListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref FrontendTargetGroup
+      LoadBalancerArn: !Ref FrontendLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  # Listener for backend Load Balancer
+  BackendListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref BackendTargetGroup
+      LoadBalancerArn: !Ref BackendLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  # S3 Bucket
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: myassignmentbucket2024
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  # Bucket Policy
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - s3:GetObject
+            Resource: !Sub "arn:aws:s3:::myassignmentbucket2024/*"
+
+  # Lambda Function for Uploading Images
+  UploadImageLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: addProductImageLambdaFunction
+      Handler: "index.lambda_handler"
+      Role: !Ref LambdaExecutionRoleArn
+      Runtime: python3.8
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import base64
+          import uuid
+
+          # Initialize S3 client
+          s3 = boto3.client('s3')
+
+          def lambda_handler(event, context):
+              # Add CORS headers
+              headers = {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                  'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+              }
+
+              # Define your bucket name
+              bucket_name = 'myassignmentbucket2024'
+
+              # Collect the uploaded images' URLs
+              image_urls = []
+
+              # Iterate through each file in the event
+              for file in event['files']:
+                  try:
+                      # Get the file content and decode from base64
+                      file_content = base64.b64decode(file['content'])
+                      file_extension = file['extension']
+                      
+                      # Generate a unique file name
+                      file_name = f"{uuid.uuid4()}.{file_extension}"
+                      
+                      # Upload file to S3
+                      s3.put_object(Bucket=bucket_name, Key=file_name, Body=file_content, ContentType=f"image/{file_extension}")
+
+                      # Construct the URL for the uploaded image
+                      image_url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
+                      image_urls.append(image_url)
+
+                  except Exception as e:
+                      return {
+                          'statusCode': 500,
+                          'headers': headers,
+                          'body': json.dumps(f"Error uploading file {file['name']}: {str(e)}")
+                      }
+              
+              # Return the image URLs to the frontend
+              return {
+                  'statusCode': 200,
+                  'headers': headers,
+                  'body': json.dumps({'image_urls': image_urls})
+              }
+
+  # SNS Topic
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: TermAssignmentTopic
+
+  # Lambda Function for SNS Subscription
+  SubscribeToSNSTopicLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: subscribeToSNSTopicLambdaFunction
+      Handler: "index.lambda_handler"
+      Role: !Ref LambdaExecutionRoleArn
+      Runtime: python3.8
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref SNSTopic
+      Code:
+        ZipFile: |
+          import boto3
+          import json
+          import os
+
+          sns_client = boto3.client('sns')
+
+          def lambda_handler(event, context):
+              print(event)
+
+              # Add CORS headers
+              headers = {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                  'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+              }
+
+              email = event['email']
+              
+              try:
+                  response = sns_client.subscribe(
+                      TopicArn=os.environ['SNS_TOPIC_ARN'],
+                      Protocol='email',
+                      Endpoint=email
+                  )
+                  return {
+                      'statusCode': 200,
+                      'headers': headers,
+                      'body': json.dumps({'message': 'Subscription email sent successfully', 'SubscriptionArn': response['SubscriptionArn']})
+                  }
+              except Exception as e:
+                  print(f"Error subscribing user to SNS topic: {e}")
+                  return {
+                      'statusCode': 500,
+                      'headers': headers,
+                      'body': json.dumps({'message': 'Failed to subscribe user to notifications', 'error': str(e)})
+                  }
+
+  # Lambda Function for Publishing Purchase Messages to SNS
+  PublishPurchaseMessageLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: publishPurchaseMessageLambdaFunction
+      Handler: "index.lambda_handler"
+      Role: !Ref LambdaExecutionRoleArn
+      Runtime: python3.8
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref SNSTopic
+      Code:
+        ZipFile: |
+          import boto3
+          import json
+          import os
+
+          sns_client = boto3.client('sns')
+
+          def lambda_handler(event, context):
+              # Add CORS headers
+              headers = {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                  'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+              }
+
+              purchase_details = event['purchaseDetails']
+              
+              # Extract user email from the purchase details
+              user_email = purchase_details['userEmail']
+              message = f"Thank you for your purchase! You bought {purchase_details['itemName']} for ${purchase_details['amount']}."
+              
+              try:
+                  response = sns_client.publish(
+                      TopicArn=os.environ['SNS_TOPIC_ARN'],
+                      Message=message,
+                      Subject="Your Purchase Confirmation",
+                      MessageAttributes={
+                          'email': {
+                              'DataType': 'String',
+                              'StringValue': user_email
+                          }
+                      }
+                  )
+                  print('Purchase message sent successfully')
+                  return {
+                      'statusCode': 200,
+                      'headers': headers,
+                      'body': json.dumps({'message': 'Purchase message sent successfully', 'MessageId': response['MessageId']})
+                  }
+              except Exception as e:
+                  print(f"Error publishing purchase message to SNS: {e}")
+                  return {
+                      'statusCode': 500,
+                      'headers': headers,
+                      'body': json.dumps({'message': 'Failed to send purchase message', 'error': str(e)})
+                  }
+
+  # API Gateway for Upload Image Lambda
+  UploadImageApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: UploadImageApi
+      Description: API for Upload Image Lambda Function
+
+  UploadImageApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt [UploadImageApi, RootResourceId]
+      PathPart: upload-image
+      RestApiId: !Ref UploadImageApi
+
+  UploadImageApiPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref UploadImageApiResource
+      RestApiId: !Ref UploadImageApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadImageLambdaFunction.Arn}/invocations
+        RequestTemplates:
+          application/json: |
+            {
+              "files": $input.json('$.files')
+            }
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: |
+                #set($inputRoot = $input.path('$'))
+                $input.json('$')
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+          - StatusCode: 400
+            ResponseTemplates:
+              application/json: '{"error": "Bad Request"}'
+          - StatusCode: 500
+            ResponseTemplates:
+              application/json: '{"error": "Internal Server Error"}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+        - StatusCode: 400
+          ResponseModels:
+            application/json: "Empty"
+        - StatusCode: 500
+          ResponseModels:
+            application/json: "Empty"
+
+  UploadImageApiOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      ResourceId: !Ref UploadImageApiResource
+      RestApiId: !Ref UploadImageApi
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ""
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway for SNS Lambdas
+  SNSApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: SNSApi
+      Description: API for SNS Lambdas
+
+  SubscribeToSNSApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt [SNSApi, RootResourceId]
+      PathPart: subscribe-sns
+      RestApiId: !Ref SNSApi
+
+  SubscribeToSNSApiPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref SubscribeToSNSApiResource
+      RestApiId: !Ref SNSApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SubscribeToSNSTopicLambdaFunction.Arn}/invocations
+        RequestTemplates:
+          application/json: |
+            {
+              "email": $input.json('$.email')
+            }
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: |
+                #set($inputRoot = $input.path('$'))
+                $input.json('$')
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+          - StatusCode: 400
+            ResponseTemplates:
+              application/json: '{"error": "Bad Request"}'
+          - StatusCode: 500
+            ResponseTemplates:
+              application/json: '{"error": "Internal Server Error"}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+        - StatusCode: 400
+          ResponseModels:
+            application/json: "Empty"
+        - StatusCode: 500
+          ResponseModels:
+            application/json: "Empty"
+
+  SubscribeToSNSApiOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      ResourceId: !Ref SubscribeToSNSApiResource
+      RestApiId: !Ref SNSApi
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ""
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  PublishPurchaseMessageApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt [SNSApi, RootResourceId]
+      PathPart: publish-purchase
+      RestApiId: !Ref SNSApi
+
+  PublishPurchaseMessageApiPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref PublishPurchaseMessageApiResource
+      RestApiId: !Ref SNSApi
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PublishPurchaseMessageLambdaFunction.Arn}/invocations
+        RequestTemplates:
+          application/json: |
+            {
+              "purchaseDetails": $input.json('$.purchaseDetails')
+            }
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: |
+                #set($inputRoot = $input.path('$'))
+                $input.json('$')
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+          - StatusCode: 400
+            ResponseTemplates:
+              application/json: '{"error": "Bad Request"}'
+          - StatusCode: 500
+            ResponseTemplates:
+              application/json: '{"error": "Internal Server Error"}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+        - StatusCode: 400
+          ResponseModels:
+            application/json: "Empty"
+        - StatusCode: 500
+          ResponseModels:
+            application/json: "Empty"
+
+  PublishPurchaseMessageApiOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      ResourceId: !Ref PublishPurchaseMessageApiResource
+      RestApiId: !Ref SNSApi
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ""
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # Deployments and Stages for APIs
+  UploadImageApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - UploadImageApiPostMethod
+      - UploadImageApiOptionsMethod
+    Properties:
+      RestApiId: !Ref UploadImageApi
+      StageName: prod
+
+  SNSApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - SubscribeToSNSApiPostMethod
+      - SubscribeToSNSApiOptionsMethod
+      - PublishPurchaseMessageApiPostMethod
+      - PublishPurchaseMessageApiOptionsMethod
+    Properties:
+      RestApiId: !Ref SNSApi
+      StageName: prod
+
+  # Permissions for API Gateway to invoke Lambda Functions
+  UploadImagePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadImageLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UploadImageApi}/*/POST/upload-image
+
+  SubscribeToSNSPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SubscribeToSNSTopicLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SNSApi}/*/POST/subscribe-sns
+
+  PublishPurchaseMessagePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PublishPurchaseMessageLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SNSApi}/*/POST/publish-purchase
+
+Outputs:
+  FrontendLoadBalancerDNSName:
+    Description: DNS Name of the frontend load balancer
+    Value: !GetAtt FrontendLoadBalancer.DNSName
+
+  BackendLoadBalancerDNSName:
+    Description: DNS Name of the backend load balancer
+    Value: !GetAtt BackendLoadBalancer.DNSName
+
+  S3BucketName:
+    Description: Name of the S3 bucket
+    Value: !Ref S3Bucket
+
+  LambdaFunctionName:
+    Description: Name of the Lambda function
+    Value: !Ref UploadImageLambdaFunction
+
+  SNSTopicArn:
+    Description: ARN of the SNS Topic
+    Value: !Ref SNSTopic
+
+  SubscribeToSNSTopicLambdaFunctionName:
+    Description: Name of the SNS Subscription Lambda function
+    Value: !Ref SubscribeToSNSTopicLambdaFunction
+
+  PublishPurchaseMessageLambdaFunctionName:
+    Description: Name of the Purchase Message Lambda function
+    Value: !Ref PublishPurchaseMessageLambdaFunction
+
+  UploadImageApiUrl:
+    Description: URL of the Upload Image API
+    Value: !Sub "https://${UploadImageApi}.execute-api.${AWS::Region}.amazonaws.com/prod/upload-image"
+
+  SNSApiUrl:
+    Description: URL of the SNS API
+    Value: !Sub "https://${SNSApi}.execute-api.${AWS::Region}.amazonaws.com/prod"

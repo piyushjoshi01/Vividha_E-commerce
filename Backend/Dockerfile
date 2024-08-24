@@ -28,7 +28,7 @@ COPY --from=builder /app/node_modules ./node_modules
 ENV NODE_ENV=production
 
 # Expose the port the app runs on
-EXPOSE 8000
+EXPOSE 80
 
 # Command to run the app
 CMD ["node", "dist/index.js"]

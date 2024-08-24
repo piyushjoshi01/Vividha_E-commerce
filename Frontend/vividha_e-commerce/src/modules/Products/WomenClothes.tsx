@@ -8,7 +8,7 @@ const WomenClothes = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [womenClothes, setWomenClothes] = useState<Product[]>([]);
   const apiUrl =
-    "http//:internal-BackendLoadBalancer-294495114.us-east-1.elb.amazonaws.com/product/get-all-products";
+    "http://BackendLoadBalancer-1876345350.us-east-1.elb.amazonaws.com/product/get-all-products";
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
